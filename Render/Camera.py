@@ -1,5 +1,6 @@
 from math import pi, cos, sin
 import numpy
+import Matrix.MatrixMath as MatrixMath
 
 class Camera(object):
     '''camera spin order goes:
@@ -15,23 +16,15 @@ class Camera(object):
 
     def update_basis_vectors(self):
         
-        rot_matrices = numpy.zeros((3, 3, 3), dtype = float)
-        rot_matrices[0] = numpy.array([[1,0,0], 
-                                      [0, cos(self.camera_spins[0] ), -sin(self.camera_spins[0] )],
-                                      [0, sin(self.camera_spins[0] ), cos(self.camera_spins[0] )]])
+        basis_vectors = numpy.array([[1.0,0.0,0.0],
+                                    [0.0,1.0,0.0],
+                                    [0.0,0.0,1.0]])
         
-        rot_matrices[1] = numpy.array([[cos(self.camera_spins[1]), 0, sin(self.camera_spins[1])],
-                                       [0, 1, 0],
-                                       [-sin(self.camera_spins[1]), 0, cos(self.camera_spins[1])]])
+        rotated_basis_vectors = MatrixMath.apply_rotation(basis_vectors, self.camera_spins, self.pos)
         
-        rot_matrices[2] = numpy.array([[cos(self.camera_spins[2]), -sin(self.camera_spins[2]), 0],
-                                       [sin(self.camera_spins[2]), cos(self.camera_spins[2]), 0],
-                                       [0,0,1]])
-        
-        product = (numpy.dot(numpy.dot(rot_matrices[0],rot_matrices[1]),rot_matrices[2]))
-        self.right_vec = product[0]
-        self.depth_vec = product[1]
-        self.up_vec = product[2]
+        self.right_vec = rotated_basis_vectors[0]
+        self.depth_vec = rotated_basis_vectors[1]
+        self.up_vec = rotated_basis_vectors[2]
     
     def create_projection(self, td_points, screen_dim):
         points = numpy.zeros((td_points.shape[0], 2))
